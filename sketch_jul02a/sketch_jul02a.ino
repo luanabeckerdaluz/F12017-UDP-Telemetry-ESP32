@@ -121,13 +121,15 @@ struct UDPPacket{
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
-#define GEAR_1_LED 14
-#define GEAR_2_LED 27
-#define GEAR_3_LED 26
-#define GEAR_4_LED 25
+#define GEAR_1_LED 25
+#define GEAR_2_LED 26
+#define GEAR_3_LED 27
+#define GEAR_4_LED 14
+#define GEAR_5_LED 32
+#define GEAR_6_LED 33
 
-const char* ssid = "...";
-const char* password =  "...";
+const char* ssid = "WIFI_SSID";
+const char* password =  "WIFI_PASSWORD";
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 20777;  // local port to listen on
@@ -142,6 +144,8 @@ void setup() {
   pinMode(GEAR_2_LED, OUTPUT);
   pinMode(GEAR_3_LED, OUTPUT);
   pinMode(GEAR_4_LED, OUTPUT);
+  pinMode(GEAR_5_LED, OUTPUT);
+  pinMode(GEAR_6_LED, OUTPUT);
   
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -180,6 +184,8 @@ void loop() {
       digitalWrite(GEAR_2_LED, LOW);
       digitalWrite(GEAR_3_LED, LOW);
       digitalWrite(GEAR_4_LED, LOW);
+      digitalWrite(GEAR_5_LED, LOW);
+      digitalWrite(GEAR_6_LED, LOW);
     }
     // GEAR 2
     else if (gear-1 == 2){
@@ -187,6 +193,8 @@ void loop() {
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, LOW);
       digitalWrite(GEAR_4_LED, LOW);
+      digitalWrite(GEAR_5_LED, LOW);
+      digitalWrite(GEAR_6_LED, LOW);
     }
     // GEAR 3
     else if (gear-1 == 3){
@@ -194,6 +202,8 @@ void loop() {
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
       digitalWrite(GEAR_4_LED, LOW);
+      digitalWrite(GEAR_5_LED, LOW);
+      digitalWrite(GEAR_6_LED, LOW);
     }
     // GEAR 4
     else if (gear-1 == 4){
@@ -201,14 +211,54 @@ void loop() {
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
       digitalWrite(GEAR_4_LED, HIGH);
+      digitalWrite(GEAR_5_LED, LOW);
+      digitalWrite(GEAR_6_LED, LOW);
     }
-    else{
+    // GEAR 5
+    else if (gear-1 == 5){
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
       digitalWrite(GEAR_4_LED, HIGH);
+      digitalWrite(GEAR_5_LED, HIGH);
+      digitalWrite(GEAR_6_LED, LOW);
+    }
+    // GEAR 6
+    else if (gear-1 == 6){
+      digitalWrite(GEAR_1_LED, HIGH);
+      digitalWrite(GEAR_2_LED, HIGH);
+      digitalWrite(GEAR_3_LED, HIGH);
+      digitalWrite(GEAR_4_LED, HIGH);
+      digitalWrite(GEAR_5_LED, HIGH);
+      digitalWrite(GEAR_6_LED, HIGH);
+    }
+    else{
+      digitalWrite(GEAR_1_LED, LOW);
+      digitalWrite(GEAR_2_LED, LOW);
+      digitalWrite(GEAR_3_LED, LOW);
+      digitalWrite(GEAR_4_LED, LOW);
+      digitalWrite(GEAR_5_LED, LOW);
+      digitalWrite(GEAR_6_LED, LOW);
     }
   }
   
-  
+//  digitalWrite(GEAR_1_LED, HIGH);
+//  delay(100);
+//  digitalWrite(GEAR_2_LED, HIGH);
+//  delay(100);
+//  digitalWrite(GEAR_3_LED, HIGH);
+//  delay(100);
+//  digitalWrite(GEAR_4_LED, HIGH);
+//  delay(100);
+//  digitalWrite(GEAR_5_LED, HIGH);
+//  delay(100);
+//  digitalWrite(GEAR_6_LED, HIGH);
+//  delay(100);
+//  
+//  digitalWrite(GEAR_1_LED, LOW);
+//  digitalWrite(GEAR_2_LED, LOW);
+//  digitalWrite(GEAR_3_LED, LOW);
+//  digitalWrite(GEAR_4_LED, LOW);
+//  digitalWrite(GEAR_5_LED, LOW);
+//  digitalWrite(GEAR_6_LED, LOW);
 }
