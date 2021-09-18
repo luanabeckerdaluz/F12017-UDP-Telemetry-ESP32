@@ -1,3 +1,4 @@
+// Telemetry UDP Packet structure
 struct CarUDPData{
     float m_worldPosition[3]; // world co-ordinates of vehicle
     float m_lastLapTime;
@@ -18,7 +19,7 @@ struct CarUDPData{
 
 };
 
-// Packet size – 1289 bytes
+// Telemetry UDP Packet structure
 struct UDPPacket{
     float m_time;
     float m_lapTime;
@@ -128,8 +129,8 @@ struct UDPPacket{
 #define GEAR_5_LED 32
 #define GEAR_6_LED 33
 
-const char* ssid = "WIFI_SSID";
-const char* password =  "WIFI_PASSWORD";
+const char* ssid = "*****";
+const char* password =  "*****";
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 20777;  // local port to listen on
@@ -139,47 +140,84 @@ char  replyPacekt[] = "Hi there! Got the message :-)";  // a reply string to sen
 
 WiFiClient espClient;
  
-void setup() {
+void setup()
+{
+  // Initialize serial comm
+  Serial.begin(115200);
+  
+  // Connect to Wifi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.println("Connecting to WiFi..");
+  }
+  Serial.println("Connected to the WiFi network");
+
+  // Configure UDP settings
+  Udp.begin(localUdpPort);
+  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
+  
+  // Define outputs pins modes
+  pinMode(2, OUTPUT);
+  
   pinMode(GEAR_1_LED, OUTPUT);
   pinMode(GEAR_2_LED, OUTPUT);
   pinMode(GEAR_3_LED, OUTPUT);
   pinMode(GEAR_4_LED, OUTPUT);
   pinMode(GEAR_5_LED, OUTPUT);
   pinMode(GEAR_6_LED, OUTPUT);
-  
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
- 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
-  Serial.println("Connected to the WiFi network");
- 
-  Udp.begin(localUdpPort);
-  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
-//  Serial.printf("Now listening at IP %s, UDP port %d\n", espClient.localIP().toString().c_str(), localUdpPort);
-
-  delay(2000);
 }
  
-void loop() {
+void loop()
+{
+  // Parse UDP packet
   int packetSize = Udp.parsePacket();
-  if (packetSize) {
+  
+  // if there is packet, process
+  if (packetSize) 
+  {
+  
     // receive incoming UDP packets
-//    Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+    Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 1289);
-    if (len > 0){
+    if (len > 0)
+    {
       incomingPacket[len] = 0;
-//      Serial.println("LEN 0");
+      // Serial.println("LEN 0");
     }
+    
     UDPPacket *tmp_pckt = (UDPPacket *) incomingPacket;
-//    Serial.println("LEN NÃO 0");
-    float gear = tmp_pckt->m_gear;
-    Serial.println(gear);
+    // Serial.println("LEN NÃO 0");
 
+
+    // Application: use packet information
+    
+    // -----------------------------------
+    // DRS
+
+    int drs = tmp_pckt->m_drs;
+    Serial.println(drs+1);
+
+    if (drs == 1)
+    {
+      digitalWrite(2, HIGH);
+    }
+    else if (drs == 0)
+    {
+      digitalWrite(2, LOW);
+    }
+
+
+    // -----------------------------------
+    // GEAR
+    
+    float gear = tmp_pckt->m_gear - 1;
+    Serial.println(gear);
+    
     // GEAR 1
-    if (gear-1 == 1){
+    if (gear == 1)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, LOW);
       digitalWrite(GEAR_3_LED, LOW);
@@ -187,8 +225,10 @@ void loop() {
       digitalWrite(GEAR_5_LED, LOW);
       digitalWrite(GEAR_6_LED, LOW);
     }
+    
     // GEAR 2
-    else if (gear-1 == 2){
+    else if (gear == 2)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, LOW);
@@ -196,8 +236,10 @@ void loop() {
       digitalWrite(GEAR_5_LED, LOW);
       digitalWrite(GEAR_6_LED, LOW);
     }
+    
     // GEAR 3
-    else if (gear-1 == 3){
+    else if (gear == 3)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
@@ -205,8 +247,10 @@ void loop() {
       digitalWrite(GEAR_5_LED, LOW);
       digitalWrite(GEAR_6_LED, LOW);
     }
+    
     // GEAR 4
-    else if (gear-1 == 4){
+    else if (gear == 4)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
@@ -214,8 +258,10 @@ void loop() {
       digitalWrite(GEAR_5_LED, LOW);
       digitalWrite(GEAR_6_LED, LOW);
     }
+    
     // GEAR 5
-    else if (gear-1 == 5){
+    else if (gear == 5)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
@@ -223,8 +269,10 @@ void loop() {
       digitalWrite(GEAR_5_LED, HIGH);
       digitalWrite(GEAR_6_LED, LOW);
     }
+    
     // GEAR 6
-    else if (gear-1 == 6){
+    else if (gear == 6)
+    {
       digitalWrite(GEAR_1_LED, HIGH);
       digitalWrite(GEAR_2_LED, HIGH);
       digitalWrite(GEAR_3_LED, HIGH);
@@ -232,7 +280,9 @@ void loop() {
       digitalWrite(GEAR_5_LED, HIGH);
       digitalWrite(GEAR_6_LED, HIGH);
     }
-    else{
+    
+    else
+    {
       digitalWrite(GEAR_1_LED, LOW);
       digitalWrite(GEAR_2_LED, LOW);
       digitalWrite(GEAR_3_LED, LOW);
@@ -241,24 +291,4 @@ void loop() {
       digitalWrite(GEAR_6_LED, LOW);
     }
   }
-  
-//  digitalWrite(GEAR_1_LED, HIGH);
-//  delay(100);
-//  digitalWrite(GEAR_2_LED, HIGH);
-//  delay(100);
-//  digitalWrite(GEAR_3_LED, HIGH);
-//  delay(100);
-//  digitalWrite(GEAR_4_LED, HIGH);
-//  delay(100);
-//  digitalWrite(GEAR_5_LED, HIGH);
-//  delay(100);
-//  digitalWrite(GEAR_6_LED, HIGH);
-//  delay(100);
-//  
-//  digitalWrite(GEAR_1_LED, LOW);
-//  digitalWrite(GEAR_2_LED, LOW);
-//  digitalWrite(GEAR_3_LED, LOW);
-//  digitalWrite(GEAR_4_LED, LOW);
-//  digitalWrite(GEAR_5_LED, LOW);
-//  digitalWrite(GEAR_6_LED, LOW);
 }
