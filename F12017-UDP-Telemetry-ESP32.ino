@@ -1,3 +1,7 @@
+// =============================================
+// Structures
+// =============================================
+
 // Telemetry UDP Packet structure
 struct CarUDPData{
     float m_worldPosition[3]; // world co-ordinates of vehicle
@@ -20,7 +24,7 @@ struct CarUDPData{
 };
 
 // Telemetry UDP Packet structure
-struct UDPPacket{
+struct UDPPacket{ 
     float m_time;
     float m_lapTime;
     float m_lapDistance;
@@ -119,27 +123,29 @@ struct UDPPacket{
     float m_ang_acc_z;                 // NEW (v1.8) angular acceleration z-component
 };
 
+
+// =============================================
+// Includes and Defines
+// =============================================
+
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
-#define GEAR_1_LED 25
-#define GEAR_2_LED 26
-#define GEAR_3_LED 27
-#define GEAR_4_LED 14
-#define GEAR_5_LED 32
-#define GEAR_6_LED 33
+#define ESP32_ONBOARD_LED 2
 
-const char* ssid = "*****";
-const char* password =  "*****";
+// Set LAN ssid and password
+const char* ssid = "SSID";
+const char* password = "PASSWORD";
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 20777;  // local port to listen on
 char incomingPacket[1289];  // buffer for incoming packets
-//UDPPacket incomingPacket;
-char  replyPacekt[] = "Hi there! Got the message :-)";  // a reply string to send back
 
-WiFiClient espClient;
- 
+
+// =============================================
+// Setup
+// =============================================
+
 void setup()
 {
   // Initialize serial comm
@@ -158,137 +164,74 @@ void setup()
   Udp.begin(localUdpPort);
   Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
   
-  // Define outputs pins modes
-  pinMode(2, OUTPUT);
-  
-  pinMode(GEAR_1_LED, OUTPUT);
-  pinMode(GEAR_2_LED, OUTPUT);
-  pinMode(GEAR_3_LED, OUTPUT);
-  pinMode(GEAR_4_LED, OUTPUT);
-  pinMode(GEAR_5_LED, OUTPUT);
-  pinMode(GEAR_6_LED, OUTPUT);
+  // Define ESP32 built in LED as output
+  pinMode(ESP32_ONBOARD_LED, OUTPUT);
+  digitalWrite(ESP32_ONBOARD_LED, LOW);
 }
- 
+
+
+// =============================================
+// Loop
+// =============================================
+
 void loop()
 {
   // Parse UDP packet
   int packetSize = Udp.parsePacket();
   
-  // if there is packet, process
+  // if there is incoming UDP packets, process
   if (packetSize) 
   {
-  
+    
+    // -------------------------------------------------
     // receive incoming UDP packets
+    
     Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 1289);
     if (len > 0)
     {
       incomingPacket[len] = 0;
-      // Serial.println("LEN 0");
     }
     
     UDPPacket *tmp_pckt = (UDPPacket *) incomingPacket;
-    // Serial.println("LEN NÃO 0");
 
-
+    
+    // -------------------------------------------------
     // Application: use packet information
+
+    Serial.println("==================================");
     
-    // -----------------------------------
-    // DRS
+    float m_lapTime = tmp_pckt -> m_lapTime;
+    Serial.print("m_lapTime: ");
+    Serial.println(m_lapTime);
 
-    int drs = tmp_pckt->m_drs;
-    Serial.println(drs+1);
+    float m_speed = tmp_pckt -> m_speed;
+    Serial.print("m_speed: ");
+    Serial.println(m_speed);
 
-    if (drs == 1)
-    {
-      digitalWrite(2, HIGH);
-    }
-    else if (drs == 0)
-    {
-      digitalWrite(2, LOW);
-    }
-
-
-    // -----------------------------------
-    // GEAR
-    
-    float gear = tmp_pckt->m_gear - 1;
+    int gear = tmp_pckt -> m_gear;
+    gear = gear-1;
+    Serial.print("gear: ");
     Serial.println(gear);
+
+
+    // -----------------------------------
+    // DRS - ESP32 ONBOARD LED
+
+    int m_drs = tmp_pckt -> m_drs;
+    Serial.print("m_drs: ");
+    Serial.println(m_drs);
     
-    // GEAR 1
-    if (gear == 1)
+    bool drs = (bool)m_drs; 
+
+    if (drs) 
     {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, LOW);
-      digitalWrite(GEAR_3_LED, LOW);
-      digitalWrite(GEAR_4_LED, LOW);
-      digitalWrite(GEAR_5_LED, LOW);
-      digitalWrite(GEAR_6_LED, LOW);
+      digitalWrite(ESP32_ONBOARD_LED, HIGH);
     }
-    
-    // GEAR 2
-    else if (gear == 2)
-    {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, HIGH);
-      digitalWrite(GEAR_3_LED, LOW);
-      digitalWrite(GEAR_4_LED, LOW);
-      digitalWrite(GEAR_5_LED, LOW);
-      digitalWrite(GEAR_6_LED, LOW);
-    }
-    
-    // GEAR 3
-    else if (gear == 3)
-    {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, HIGH);
-      digitalWrite(GEAR_3_LED, HIGH);
-      digitalWrite(GEAR_4_LED, LOW);
-      digitalWrite(GEAR_5_LED, LOW);
-      digitalWrite(GEAR_6_LED, LOW);
-    }
-    
-    // GEAR 4
-    else if (gear == 4)
-    {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, HIGH);
-      digitalWrite(GEAR_3_LED, HIGH);
-      digitalWrite(GEAR_4_LED, HIGH);
-      digitalWrite(GEAR_5_LED, LOW);
-      digitalWrite(GEAR_6_LED, LOW);
-    }
-    
-    // GEAR 5
-    else if (gear == 5)
-    {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, HIGH);
-      digitalWrite(GEAR_3_LED, HIGH);
-      digitalWrite(GEAR_4_LED, HIGH);
-      digitalWrite(GEAR_5_LED, HIGH);
-      digitalWrite(GEAR_6_LED, LOW);
-    }
-    
-    // GEAR 6
-    else if (gear == 6)
-    {
-      digitalWrite(GEAR_1_LED, HIGH);
-      digitalWrite(GEAR_2_LED, HIGH);
-      digitalWrite(GEAR_3_LED, HIGH);
-      digitalWrite(GEAR_4_LED, HIGH);
-      digitalWrite(GEAR_5_LED, HIGH);
-      digitalWrite(GEAR_6_LED, HIGH);
-    }
-    
     else
     {
-      digitalWrite(GEAR_1_LED, LOW);
-      digitalWrite(GEAR_2_LED, LOW);
-      digitalWrite(GEAR_3_LED, LOW);
-      digitalWrite(GEAR_4_LED, LOW);
-      digitalWrite(GEAR_5_LED, LOW);
-      digitalWrite(GEAR_6_LED, LOW);
+      digitalWrite(ESP32_ONBOARD_LED, LOW);
     }
+    
   }
 }
